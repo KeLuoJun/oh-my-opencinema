@@ -2,8 +2,8 @@ import type { AgentConfig } from "@opencode-ai/sdk";
 
 /**
  * Agent mode determines UI model selection behavior:
- * - "primary": Respects user's UI-selected model (sisyphus, atlas)
- * - "subagent": Uses own fallback chain, ignores UI selection (oracle, explore, etc.)
+ * - "primary": Respects user's UI-selected model (cinema)
+ * - "subagent": Uses own fallback chain, ignores UI selection
  * - "all": Available in both contexts (OpenCode compatibility)
  */
 export type AgentMode = "primary" | "subagent" | "all";
@@ -17,7 +17,7 @@ export type AgentFactory = ((model: string) => AgentConfig) & {
 };
 
 /**
- * Agent category for grouping in Sisyphus prompt sections
+ * Agent category for grouping in prompts
  */
 export type AgentCategory =
   | "exploration"
@@ -31,7 +31,7 @@ export type AgentCategory =
 export type AgentCost = "FREE" | "CHEAP" | "EXPENSIVE";
 
 /**
- * Delegation trigger for Sisyphus prompt's Delegation Table
+ * Delegation trigger for prompt's Delegation Table
  */
 export interface DelegationTrigger {
   /** Domain of work (e.g., "Frontend UI/UX") */
@@ -41,8 +41,7 @@ export interface DelegationTrigger {
 }
 
 /**
- * Metadata for generating Sisyphus prompt sections dynamically
- * This allows adding/removing agents without manually updating the Sisyphus prompt
+ * Metadata for generating prompt sections dynamically
  */
 export interface AgentPromptMetadata {
   /** Category for grouping in prompt sections */
@@ -60,13 +59,13 @@ export interface AgentPromptMetadata {
   /** When NOT to use this agent */
   avoidWhen?: string[];
 
-  /** Optional dedicated prompt section (markdown) - for agents like Oracle that have special sections */
+  /** Optional dedicated prompt section (markdown) */
   dedicatedSection?: string;
 
-  /** Nickname/alias used in prompt (e.g., "Oracle" instead of "oracle") */
+  /** Nickname/alias used in prompt */
   promptAlias?: string;
 
-  /** Key triggers that should appear in Phase 0 (e.g., "External library mentioned → fire librarian") */
+  /** Key triggers that should appear in Phase 0 */
   keyTrigger?: string;
 }
 
@@ -104,16 +103,7 @@ export function isGeminiModel(model: string): boolean {
   return modelName.startsWith("gemini-");
 }
 
-export type BuiltinAgentName =
-  | "sisyphus"
-  | "hephaestus"
-  | "oracle"
-  | "librarian"
-  | "explore"
-  | "multimodal-looker"
-  | "metis"
-  | "momus"
-  | "atlas";
+export type BuiltinAgentName = "cinema";
 
 export type OverridableAgentName = "build" | BuiltinAgentName;
 
