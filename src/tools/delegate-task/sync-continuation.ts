@@ -28,6 +28,7 @@ export async function executeSyncContinuation(
       id: taskId,
       description: args.description,
       agent: "continue",
+      status: "running",
       isBackground: false,
     })
   }

@@ -1,7 +1,6 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin"
 import type { DelegateTaskArgs, ToolContextWithMetadata, DelegateTaskToolOptions } from "./types"
 import { CATEGORY_DESCRIPTIONS } from "./constants"
-import { SISYPHUS_JUNIOR_AGENT } from "./sisyphus-junior-agent"
 import { mergeCategories } from "../../shared/merge-categories"
 import { log } from "../../shared/logger"
 import { buildSystemContent } from "./prompt-builder"
@@ -110,13 +109,8 @@ export function createDelegateTask(options: DelegateTaskToolOptions): ToolDefini
       const ctx = toolContext as ToolContextWithMetadata
 
       if (args.category) {
-        if (args.subagent_type && args.subagent_type !== SISYPHUS_JUNIOR_AGENT) {
-          log("[task] category provided - overriding subagent_type to sisyphus-junior", {
-            category: args.category,
-            subagent_type: args.subagent_type,
-          })
-        }
-        args.subagent_type = SISYPHUS_JUNIOR_AGENT
+        // For video agent workflow, category determines the sub-agent to delegate to
+        // This is handled by the category resolver in executor.ts
       }
       await ctx.metadata?.({
         title: args.description,

@@ -56,7 +56,7 @@ export function loadConfigFromPath(
       const content = fs.readFileSync(configPath, "utf-8");
       const rawConfig = parseJsonc<Record<string, unknown>>(content);
 
-      migrateConfigFile(configPath, rawConfig);
+      migrateConfigFile(rawConfig);
 
       const result = OhMyOpenCodeConfigSchema.safeParse(rawConfig);
 

@@ -72,10 +72,8 @@ export async function executeSyncTask(
         sessionID,
         description: args.description,
         agent: agentToUse,
+        status: "running",
         isBackground: false,
-        category: args.category,
-        skills: args.load_skills,
-        modelInfo,
       })
     }
 

@@ -37,14 +37,14 @@ export async function executeUnstableAgentTask(
 
     const timing = getTimingConfig()
     const waitStart = Date.now()
-    let sessionID = task.sessionID
+    let sessionID: string | undefined = task.sessionID
     while (!sessionID && Date.now() - waitStart < timing.WAIT_FOR_SESSION_TIMEOUT_MS) {
       if (ctx.abort?.aborted) {
         return `Task aborted while waiting for session to start.\n\nTask ID: ${task.id}`
       }
       await new Promise(resolve => setTimeout(resolve, timing.WAIT_FOR_SESSION_INTERVAL_MS))
-      const updated = manager.getTask(task.id)
-      sessionID = updated?.sessionID
+      const updated = await manager.getTask(task.id)
+      sessionID = updated?.sessionID ?? undefined
     }
     if (!sessionID) {
       return formatDetailedError(new Error(`Task failed to start within timeout (30s). Task ID: ${task.id}, Status: ${task.status}`), {
@@ -89,9 +89,9 @@ export async function executeUnstableAgentTask(
 
       await new Promise(resolve => setTimeout(resolve, timingCfg.POLL_INTERVAL_MS))
 
-      const currentTask = manager.getTask(task.id)
+      const currentTask = await manager.getTask(task.id)
       if (currentTask && (currentTask.status === "interrupt" || currentTask.status === "error" || currentTask.status === "cancelled")) {
-        terminalStatus = { status: currentTask.status, error: currentTask.error }
+        terminalStatus = { status: currentTask.status, error: (currentTask as { error?: string }).error }
         break
       }
 

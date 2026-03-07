@@ -1,4 +1,4 @@
-import type { BackgroundManager } from "../../features/background-agent"
+// Simplified - background notification hook no longer needed for video agent
 
 interface Event {
   type: string
@@ -18,21 +18,18 @@ interface ChatMessageOutput {
 }
 
 /**
- * Background notification hook - handles event routing to BackgroundManager.
- *
- * Notifications are now delivered directly via session.prompt({ noReply })
- * from the manager, so this hook only needs to handle event routing.
+ * Background notification hook - no longer needed for video agent
  */
-export function createBackgroundNotificationHook(manager: BackgroundManager) {
+export function createBackgroundNotificationHook(_manager: unknown) {
   const eventHandler = async ({ event }: EventInput) => {
-    manager.handleEvent(event)
+    // No-op for video agent
   }
 
   const chatMessageHandler = async (
-    input: ChatMessageInput,
-    output: ChatMessageOutput,
+    _input: ChatMessageInput,
+    _output: ChatMessageOutput,
   ): Promise<void> => {
-    manager.injectPendingNotificationsIntoChatMessage(output, input.sessionID)
+    // No-op for video agent
   }
 
   return {

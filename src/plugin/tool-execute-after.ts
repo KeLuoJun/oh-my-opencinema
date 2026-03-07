@@ -1,9 +1,6 @@
 import { consumeToolMetadata } from "../features/tool-metadata-store"
 import type { CreatedHooks } from "../create-hooks"
 import type { PluginContext } from "./types"
-import { readState, writeState } from "../hooks/ralph-loop/storage"
-
-const VERIFICATION_ATTEMPT_PATTERN = /<ulw_verification_attempt_id>(.*?)<\/ulw_verification_attempt_id>/i
 
 export function createToolExecuteAfterHandler(args: {
   ctx: PluginContext
@@ -29,30 +26,6 @@ export function createToolExecuteAfterHandler(args: {
       }
       if (stored.metadata) {
         output.metadata = { ...output.metadata, ...stored.metadata }
-      }
-    }
-
-    if (input.tool === "task") {
-      const sessionId = typeof output.metadata?.sessionId === "string" ? output.metadata.sessionId : undefined
-      const agent = typeof output.metadata?.agent === "string" ? output.metadata.agent : undefined
-      const prompt = typeof output.metadata?.prompt === "string" ? output.metadata.prompt : undefined
-      const verificationAttemptId = prompt?.match(VERIFICATION_ATTEMPT_PATTERN)?.[1]?.trim()
-      const loopState = readState(ctx.directory)
-
-      if (
-        agent === "oracle"
-        && sessionId
-        && verificationAttemptId
-        && loopState?.active === true
-        && loopState.ultrawork === true
-        && loopState.verification_pending === true
-        && loopState.session_id === input.sessionID
-        && loopState.verification_attempt_id === verificationAttemptId
-      ) {
-        writeState(ctx.directory, {
-          ...loopState,
-          verification_session_id: sessionId,
-        })
       }
     }
 

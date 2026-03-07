@@ -13,15 +13,7 @@ export async function executeBackgroundContinuation(
   const { manager } = executorCtx
 
   try {
-    const task = await manager.resume({
-      sessionId: args.session_id!,
-      prompt: args.prompt,
-      parentSessionID: parentContext.sessionID,
-      parentMessageID: parentContext.messageID,
-      parentModel: parentContext.model,
-      parentAgent: parentContext.agent,
-      parentTools: getSessionTools(parentContext.sessionID),
-    })
+    const task = await manager.resume(args.session_id!, { prompt: args.prompt })
 
     const bgContMeta = {
       title: `Continue: ${task.description}`,

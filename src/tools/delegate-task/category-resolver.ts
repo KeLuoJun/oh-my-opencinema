@@ -3,12 +3,14 @@ import type { DelegateTaskArgs } from "./types"
 import type { ExecutorContext } from "./executor-types"
 import type { FallbackEntry } from "../../shared/model-requirements"
 import { mergeCategories } from "../../shared/merge-categories"
-import { SISYPHUS_JUNIOR_AGENT } from "./sisyphus-junior-agent"
 import { resolveCategoryConfig } from "./categories"
 import { parseModelString } from "./model-string-parser"
 import { CATEGORY_MODEL_REQUIREMENTS } from "../../shared/model-requirements"
 import { getAvailableModelsForDelegateTask } from "./available-models"
 import { resolveModelForDelegateTask } from "./model-selection"
+
+// For video agent workflow, category determines sub-agent
+const CATEGORY_AGENT = "subagent"
 
 export interface CategoryResolutionResult {
   agentToUse: string
@@ -179,7 +181,7 @@ Available categories: ${categoryNames.join(", ")}`,
   const isUnstableAgent = resolved.config.is_unstable_agent === true || [unstableModel, categoryConfigModel].some(m => m ? m.includes("gemini") || m.includes("minimax") || m.includes("kimi") : false)
 
   return {
-    agentToUse: SISYPHUS_JUNIOR_AGENT,
+    agentToUse: CATEGORY_AGENT,
     categoryModel,
     categoryPromptAppend,
     maxPromptTokens: resolved.config.max_prompt_tokens,

@@ -1,66 +1,24 @@
 import type { OhMyOpenCodeConfig } from "./config"
 import type { ModelCacheState } from "./plugin-state"
-import type { PluginContext, TmuxConfig } from "./plugin/types"
+import type { PluginContext } from "./plugin/types"
 
-import type { SubagentSessionCreatedEvent } from "./features/background-agent"
-import { BackgroundManager } from "./features/background-agent"
 import { SkillMcpManager } from "./features/skill-mcp-manager"
 import { initTaskToastManager } from "./features/task-toast-manager"
-import { TmuxSessionManager } from "./features/tmux-subagent"
 import { createConfigHandler } from "./plugin-handlers"
-import { log } from "./shared"
 
 export type Managers = {
-  tmuxSessionManager: TmuxSessionManager
-  backgroundManager: BackgroundManager
   skillMcpManager: SkillMcpManager
   configHandler: ReturnType<typeof createConfigHandler>
+  backgroundManager?: unknown
+  tmuxSessionManager?: unknown
 }
 
 export function createManagers(args: {
   ctx: PluginContext
   pluginConfig: OhMyOpenCodeConfig
-  tmuxConfig: TmuxConfig
   modelCacheState: ModelCacheState
-  backgroundNotificationHookEnabled: boolean
 }): Managers {
-  const { ctx, pluginConfig, tmuxConfig, modelCacheState, backgroundNotificationHookEnabled } = args
-
-  const tmuxSessionManager = new TmuxSessionManager(ctx, tmuxConfig)
-
-  const backgroundManager = new BackgroundManager(
-    ctx,
-    pluginConfig.background_task,
-    {
-      tmuxConfig,
-		onSubagentSessionCreated: async (event: SubagentSessionCreatedEvent) => {
-			log("[index] onSubagentSessionCreated callback received", {
-				sessionID: event.sessionID,
-				parentID: event.parentID,
-          title: event.title,
-        })
-
-        await tmuxSessionManager.onSessionCreated({
-          type: "session.created",
-          properties: {
-            info: {
-              id: event.sessionID,
-              parentID: event.parentID,
-              title: event.title,
-            },
-          },
-        })
-
-        log("[index] onSubagentSessionCreated callback completed")
-      },
-      onShutdown: () => {
-        tmuxSessionManager.cleanup().catch((error) => {
-          log("[index] tmux cleanup error during shutdown:", error)
-        })
-      },
-      enableParentSessionNotifications: backgroundNotificationHookEnabled,
-    },
-  )
+  const { ctx, pluginConfig, modelCacheState } = args
 
   initTaskToastManager(ctx.client)
 
@@ -73,8 +31,6 @@ export function createManagers(args: {
   })
 
   return {
-    tmuxSessionManager,
-    backgroundManager,
     skillMcpManager,
     configHandler,
   }

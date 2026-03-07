@@ -42,14 +42,14 @@ export async function executeBackgroundTask(
     // so we must wait briefly for the session to be created to set metadata correctly.
     const timing = getTimingConfig()
     const waitStart = Date.now()
-    let sessionId = task.sessionID
+    let sessionId: string | undefined = task.sessionID
     while (!sessionId && Date.now() - waitStart < timing.WAIT_FOR_SESSION_TIMEOUT_MS) {
       if (ctx.abort?.aborted) {
         return `Task aborted while waiting for session to start.\n\nTask ID: ${task.id}`
       }
       await new Promise(resolve => setTimeout(resolve, timing.WAIT_FOR_SESSION_INTERVAL_MS))
-      const updated = manager.getTask(task.id)
-      sessionId = updated?.sessionID
+      const updated = await manager.getTask(task.id)
+      sessionId = updated?.sessionID ?? undefined
     }
 
     if (args.category && sessionId) {

@@ -236,10 +236,7 @@ export function createModelFallbackHook(args?: { toast?: FallbackToast; onApplie
       const toastManager = getTaskToastManager()
       if (toastManager) {
         const variantLabel = fallback.variant ? ` (${fallback.variant})` : ""
-        toastManager.updateTaskModelBySession(sessionID, {
-          model: `${fallback.providerID}/${fallback.modelID}${variantLabel}`,
-          type: "runtime-fallback",
-        })
+        toastManager.updateTaskModelBySession(sessionID, `${fallback.providerID}/${fallback.modelID}${variantLabel}`)
       }
       log("[model-fallback] Applied fallback model: " + JSON.stringify(fallback))
     },

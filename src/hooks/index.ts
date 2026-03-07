@@ -1,4 +1,3 @@
-export { createTodoContinuationEnforcer, type TodoContinuationEnforcer } from "./todo-continuation-enforcer";
 export { createContextWindowMonitorHook } from "./context-window-monitor";
 export { createSessionNotification } from "./session-notification";
 export { sendSessionNotification, playSessionNotificationSound, detectPlatform, getDefaultSoundPath } from "./session-notification-sender";
@@ -27,9 +26,6 @@ export { createInteractiveBashSessionHook } from "./interactive-bash-session";
 
 export { createThinkingBlockValidatorHook } from "./thinking-block-validator";
 export { createCategorySkillReminderHook } from "./category-skill-reminder";
-export { createRalphLoopHook, type RalphLoopHook } from "./ralph-loop";
-export { createNoSisyphusGptHook } from "./no-sisyphus-gpt";
-export { createNoHephaestusNonGptHook } from "./no-hephaestus-non-gpt";
 export { createAutoSlashCommandHook } from "./auto-slash-command";
 export { createEditErrorRecoveryHook } from "./edit-error-recovery";
 
@@ -40,7 +36,6 @@ export { createQuestionLabelTruncatorHook } from "./question-label-truncator";
 export { createStopContinuationGuardHook, type StopContinuationGuard } from "./stop-continuation-guard";
 export { createCompactionContextInjector } from "./compaction-context-injector";
 export { createCompactionTodoPreserverHook } from "./compaction-todo-preserver";
-export { createUnstableAgentBabysitterHook } from "./unstable-agent-babysitter";
 export { createPreemptiveCompactionHook } from "./preemptive-compaction";
 export { createTasksTodowriteDisablerHook } from "./tasks-todowrite-disabler";
 export { createRuntimeFallbackHook, type RuntimeFallbackHook, type RuntimeFallbackOptions } from "./runtime-fallback";
@@ -48,3 +43,27 @@ export { createWriteExistingFileGuardHook } from "./write-existing-file-guard";
 export { createHashlineReadEnhancerHook } from "./hashline-read-enhancer";
 export { createJsonErrorRecoveryHook, JSON_ERROR_TOOL_EXCLUDE_LIST, JSON_ERROR_PATTERNS, JSON_ERROR_REMINDER } from "./json-error-recovery";
 export { createReadImageResizerHook } from "./read-image-resizer"
+
+// Stubs for deleted hooks - no longer needed for video agent
+export function createTodoContinuationEnforcer() {
+  return null
+}
+export type TodoContinuationEnforcer = ReturnType<typeof createTodoContinuationEnforcer>
+
+export function createUnstableAgentBabysitterHook() {
+  return null
+}
+
+// Hooks that were removed but referenced in types
+export function createRalphLoopHook() {
+  return null
+}
+export type RalphLoopHook = ReturnType<typeof createRalphLoopHook>
+
+export function createNoSisyphusGptHook() {
+  return null
+}
+
+export function createNoHephaestusNonGptHook() {
+  return null
+}

@@ -1,10 +1,6 @@
+// Simplified continuation state for video agent
+
 import { getPlanProgress, readBoulderState } from "../../features/boulder-state"
-import {
-  getActiveContinuationMarkerReason,
-  isContinuationMarkerActive,
-  readContinuationMarker,
-} from "../../features/run-continuation-state"
-import { readState as readRalphLoopState } from "../../hooks/ralph-loop/storage"
 
 export interface ContinuationState {
   hasActiveBoulder: boolean
@@ -15,35 +11,19 @@ export interface ContinuationState {
   activeHookMarkerReason: string | null
 }
 
-export function getContinuationState(directory: string, sessionID: string): ContinuationState {
-  const marker = readContinuationMarker(directory, sessionID)
-
+export function getContinuationState(_directory: string, _sessionID: string): ContinuationState {
+  // Video agent doesn't use continuation state
   return {
-    hasActiveBoulder: hasActiveBoulderContinuation(directory, sessionID),
-    hasActiveRalphLoop: hasActiveRalphLoopContinuation(directory, sessionID),
-    hasHookMarker: marker !== null,
-    hasTodoHookMarker: marker?.sources.todo !== undefined,
-    hasActiveHookMarker: isContinuationMarkerActive(marker),
-    activeHookMarkerReason: getActiveContinuationMarkerReason(marker),
+    hasActiveBoulder: false,
+    hasActiveRalphLoop: false,
+    hasHookMarker: false,
+    hasTodoHookMarker: false,
+    hasActiveHookMarker: false,
+    activeHookMarkerReason: null,
   }
 }
 
-function hasActiveBoulderContinuation(directory: string, sessionID: string): boolean {
-  const boulder = readBoulderState(directory)
-  if (!boulder) return false
-  if (!boulder.session_ids.includes(sessionID)) return false
-
-  const progress = getPlanProgress(boulder.active_plan)
-  return !progress.isComplete
-}
-
-function hasActiveRalphLoopContinuation(directory: string, sessionID: string): boolean {
-  const state = readRalphLoopState(directory)
-  if (!state || !state.active) return false
-
-  if (state.session_id && state.session_id !== sessionID) {
-    return false
-  }
-
-  return true
+function hasActiveBoulderContinuation(_directory: string, _sessionID: string): boolean {
+  // Video agent doesn't use boulder state
+  return false
 }

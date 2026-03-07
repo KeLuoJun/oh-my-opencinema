@@ -13,16 +13,20 @@ import {
   createAgentUsageReminderHook,
   createNonInteractiveEnvHook,
   createInteractiveBashSessionHook,
-  createRalphLoopHook,
   createEditErrorRecoveryHook,
   createDelegateTaskRetryHook,
   createTaskResumeInfoHook,
   createStartWorkHook,
-  createNoSisyphusGptHook,
-  createNoHephaestusNonGptHook,
   createQuestionLabelTruncatorHook,
   createPreemptiveCompactionHook,
   createRuntimeFallbackHook,
+  createRalphLoopHook,
+  createNoSisyphusGptHook,
+  createNoHephaestusNonGptHook,
+  createTodoContinuationEnforcer,
+  createUnstableAgentBabysitterHook,
+  createStopContinuationGuardHook,
+  createCompactionTodoPreserverHook,
 } from "../../hooks"
 import { createAnthropicEffortHook } from "../../hooks/anthropic-effort"
 import {
@@ -32,7 +36,6 @@ import {
   normalizeSDKResponse,
 } from "../../shared"
 import { safeCreateHook } from "../../shared/safe-create-hook"
-import { sessionExists } from "../../tools"
 
 export type SessionHooks = {
   contextWindowMonitor: ReturnType<typeof createContextWindowMonitorHook> | null
@@ -46,16 +49,21 @@ export type SessionHooks = {
   agentUsageReminder: ReturnType<typeof createAgentUsageReminderHook> | null
   nonInteractiveEnv: ReturnType<typeof createNonInteractiveEnvHook> | null
   interactiveBashSession: ReturnType<typeof createInteractiveBashSessionHook> | null
-  ralphLoop: ReturnType<typeof createRalphLoopHook> | null
   editErrorRecovery: ReturnType<typeof createEditErrorRecoveryHook> | null
   delegateTaskRetry: ReturnType<typeof createDelegateTaskRetryHook> | null
   startWork: ReturnType<typeof createStartWorkHook> | null
-  noSisyphusGpt: ReturnType<typeof createNoSisyphusGptHook> | null
-  noHephaestusNonGpt: ReturnType<typeof createNoHephaestusNonGptHook> | null
   questionLabelTruncator: ReturnType<typeof createQuestionLabelTruncatorHook> | null
   taskResumeInfo: ReturnType<typeof createTaskResumeInfoHook> | null
   anthropicEffort: ReturnType<typeof createAnthropicEffortHook> | null
   runtimeFallback: ReturnType<typeof createRuntimeFallbackHook> | null
+  // Added for compatibility
+  ralphLoop: ReturnType<typeof createRalphLoopHook> | null
+  noSisyphusGpt: ReturnType<typeof createNoSisyphusGptHook> | null
+  noHephaestusNonGpt: ReturnType<typeof createNoHephaestusNonGptHook> | null
+  todoContinuationEnforcer: ReturnType<typeof createTodoContinuationEnforcer> | null
+  unstableAgentBabysitter: ReturnType<typeof createUnstableAgentBabysitterHook> | null
+  stopContinuationGuard: ReturnType<typeof createStopContinuationGuardHook> | null
+  compactionTodoPreserver: ReturnType<typeof createCompactionTodoPreserverHook> | null
 }
 
 export function createSessionHooks(args: {
@@ -178,7 +186,6 @@ export function createSessionHooks(args: {
     ? safeHook("auto-update-checker", () =>
         createAutoUpdateCheckerHook(ctx, {
           showStartupToast: isHookEnabled("startup-toast"),
-          isSisyphusEnabled: pluginConfig.sisyphus_agent?.disabled !== true,
           autoUpdate: pluginConfig.auto_update ?? true,
         }))
     : null
@@ -195,14 +202,6 @@ export function createSessionHooks(args: {
     ? safeHook("interactive-bash-session", () => createInteractiveBashSessionHook(ctx))
     : null
 
-  const ralphLoop = isHookEnabled("ralph-loop")
-    ? safeHook("ralph-loop", () =>
-        createRalphLoopHook(ctx, {
-          config: pluginConfig.ralph_loop,
-          checkSessionExists: async (sessionId) => await sessionExists(sessionId),
-        }))
-    : null
-
   const editErrorRecovery = isHookEnabled("edit-error-recovery")
     ? safeHook("edit-error-recovery", () => createEditErrorRecoveryHook(ctx))
     : null
@@ -213,17 +212,6 @@ export function createSessionHooks(args: {
 
   const startWork = isHookEnabled("start-work")
     ? safeHook("start-work", () => createStartWorkHook(ctx))
-    : null
-
-  const noSisyphusGpt = isHookEnabled("no-sisyphus-gpt")
-    ? safeHook("no-sisyphus-gpt", () => createNoSisyphusGptHook(ctx))
-    : null
-
-  const noHephaestusNonGpt = isHookEnabled("no-hephaestus-non-gpt")
-    ? safeHook("no-hephaestus-non-gpt", () =>
-      createNoHephaestusNonGptHook(ctx, {
-        allowNonGptModel: pluginConfig.agents?.hephaestus?.allow_non_gpt_model,
-      }))
     : null
 
   const questionLabelTruncator = isHookEnabled("question-label-truncator")
@@ -261,15 +249,20 @@ export function createSessionHooks(args: {
     agentUsageReminder,
     nonInteractiveEnv,
     interactiveBashSession,
-    ralphLoop,
     editErrorRecovery,
     delegateTaskRetry,
     startWork,
-    noSisyphusGpt,
-    noHephaestusNonGpt,
     questionLabelTruncator,
     taskResumeInfo,
     anthropicEffort,
     runtimeFallback,
+    // Add stubs for removed hooks
+    ralphLoop: null,
+    noSisyphusGpt: null,
+    noHephaestusNonGpt: null,
+    todoContinuationEnforcer: null,
+    unstableAgentBabysitter: null,
+    stopContinuationGuard: null,
+    compactionTodoPreserver: null,
   }
 }

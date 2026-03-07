@@ -32,22 +32,12 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
 
   const firstMessageVariantGate = createFirstMessageVariantGate()
 
-  const tmuxConfig = {
-    enabled: pluginConfig.tmux?.enabled ?? false,
-    layout: pluginConfig.tmux?.layout ?? "main-vertical",
-    main_pane_size: pluginConfig.tmux?.main_pane_size ?? 60,
-    main_pane_min_width: pluginConfig.tmux?.main_pane_min_width ?? 120,
-    agent_pane_min_width: pluginConfig.tmux?.agent_pane_min_width ?? 40,
-  }
-
   const modelCacheState = createModelCacheState()
 
   const managers = createManagers({
     ctx,
     pluginConfig,
-    tmuxConfig,
     modelCacheState,
-    backgroundNotificationHookEnabled: isHookEnabled("background-notification"),
   })
 
   const toolsResult = await createTools({
@@ -60,7 +50,6 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
     ctx,
     pluginConfig,
     modelCacheState,
-    backgroundManager: managers.backgroundManager,
     isHookEnabled,
     safeHookEnabled,
     mergedSkills: toolsResult.mergedSkills,
@@ -83,14 +72,11 @@ const OhMyOpenCodePlugin: Plugin = async (ctx) => {
       _input: { sessionID: string },
       output: { context: string[] },
     ): Promise<void> => {
-      await hooks.compactionTodoPreserver?.capture(_input.sessionID)
+      // compactionTodoPreserver and compactionContextInjector are stubs (null) for video agent
       await hooks.claudeCodeHooks?.["experimental.session.compacting"]?.(
         _input,
         output,
       )
-      if (hooks.compactionContextInjector) {
-        output.context.push(hooks.compactionContextInjector(_input.sessionID))
-      }
     },
   }
 }

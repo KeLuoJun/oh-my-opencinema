@@ -5,6 +5,7 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { OhMyOpenCodeConfig } from "../config"
 import type { PluginContext, ToolsRecord } from "./types"
+import type { BackgroundManager } from "../features/background-agent"
 
 import {
   builtinTools,
@@ -41,14 +42,27 @@ export type ToolRegistryResult = {
 export function createToolRegistry(args: {
   ctx: PluginContext
   pluginConfig: OhMyOpenCodeConfig
-  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "skillMcpManager">
+  managers: Managers
   skillContext: SkillContext
   availableCategories: AvailableCategory[]
 }): ToolRegistryResult {
   const { ctx, pluginConfig, managers, skillContext, availableCategories } = args
 
-  const backgroundTools = createBackgroundTools(managers.backgroundManager, ctx.client)
-  const callOmoAgent = createCallOmoAgent(ctx, managers.backgroundManager, pluginConfig.disabled_agents ?? [])
+  // Create empty background manager for video agent
+  const emptyBackgroundManager: BackgroundManager = {
+    onSubagentSessionCreated: () => {},
+    onShutdown: () => {},
+    async launch() { return { id: "", sessionID: "", description: "", agent: "", status: "completed", isBackground: false } },
+    async getTask() { return null },
+    async resume() { return { id: "", sessionID: "", description: "", agent: "", status: "completed", isBackground: false } },
+    async cancelTask() {},
+    async getAllDescendantTasks() { return [] },
+    async taskHistory() { return [] },
+  }
+
+  // background tools no longer needed for video agent
+  const backgroundTools = createBackgroundTools(emptyBackgroundManager, ctx.client)
+  const callOmoAgent = createCallOmoAgent(ctx, emptyBackgroundManager, pluginConfig.disabled_agents ?? [])
 
   const isMultimodalLookerEnabled = !(pluginConfig.disabled_agents ?? []).some(
     (agent) => agent.toLowerCase() === "multimodal-looker",
@@ -56,7 +70,7 @@ export function createToolRegistry(args: {
   const lookAt = isMultimodalLookerEnabled ? createLookAt(ctx) : null
 
   const delegateTask = createDelegateTask({
-    manager: managers.backgroundManager,
+    manager: emptyBackgroundManager,
     client: ctx.client,
     directory: ctx.directory,
     userCategories: pluginConfig.categories,
@@ -74,7 +88,10 @@ export function createToolRegistry(args: {
         parentID: event.parentID,
         title: event.title,
       })
-      await managers.tmuxSessionManager.onSessionCreated({
+      // tmuxSessionManager no longer needed for video agent
+      const tmuxManager = managers.tmuxSessionManager as { onSessionCreated?: (event: unknown) => Promise<void> } | undefined
+      if (tmuxManager?.onSessionCreated) {
+        await tmuxManager.onSessionCreated({
         type: "session.created",
         properties: {
           info: {
@@ -84,6 +101,7 @@ export function createToolRegistry(args: {
           },
         },
       })
+      }
     },
   })
 
@@ -129,7 +147,7 @@ export function createToolRegistry(args: {
     ...createAstGrepTools(ctx),
     ...createSessionManagerTools(ctx),
     ...backgroundTools,
-    call_omo_agent: callOmoAgent,
+    ...callOmoAgent,
     ...(lookAt ? { look_at: lookAt } : {}),
     task: delegateTask,
     skill_mcp: skillMcpTool,

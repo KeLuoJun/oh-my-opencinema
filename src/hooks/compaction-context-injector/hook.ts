@@ -1,4 +1,5 @@
-import type { BackgroundManager } from "../../features/background-agent"
+// Simplified - compaction-context-injector no longer needed for video agent
+
 import {
   createSystemDirective,
   SystemDirectiveTypes,
@@ -28,8 +29,8 @@ When summarizing this session, you MUST include the following sections in your s
 - Follow-up tasks identified during the work
 
 ## 5. Active Working Context (For Seamless Continuation)
-- **Files**: Paths of files currently being edited or frequently referenced
-- **Code in Progress**: Key code snippets, function signatures, or data structures under active development
+- **Files**: Paths of files currently being edited- **Code in or frequently referenced
+ Progress**: Key code snippets, function signatures, or data structures under active development
 - **External References**: Documentation URLs, library APIs, or external resources being consulted
 - **State & Variables**: Important variable names, configuration values, or runtime state relevant to ongoing work
 
@@ -39,34 +40,12 @@ When summarizing this session, you MUST include the following sections in your s
 - Do NOT invent, add, or modify constraints
 - If no explicit constraints exist, write "None"
 
-## 7. Agent Verification State (Critical for Reviewers)
-- **Current Agent**: What agent is running (momus, oracle, etc.)
-- **Verification Progress**: Files already verified/validated
-- **Pending Verifications**: Files still needing verification
-- **Previous Rejections**: If reviewer agent, what was rejected and why
-- **Acceptance Status**: Current state of review process
-
-This section is CRITICAL for reviewer agents (momus, oracle) to maintain continuity.
-
-## 8. Delegated Agent Sessions
-- List ALL background agent tasks spawned during this session
-- For each: agent name, category, status, description, and **session_id**
-- **RESUME, DON'T RESTART.** Each listed session retains full context. After compaction, use \`session_id\` to continue existing agent sessions instead of spawning new ones. This saves tokens, preserves learned context, and prevents duplicate work.
-
 This context is critical for maintaining continuity after compaction.
 `
 
-export function createCompactionContextInjector(backgroundManager?: BackgroundManager) {
-  return (sessionID?: string): string => {
-    let prompt = COMPACTION_CONTEXT_PROMPT
-
-    if (backgroundManager && sessionID) {
-      const history = backgroundManager.taskHistory.formatForCompaction(sessionID)
-      if (history) {
-        prompt += `\n### Active/Recent Delegated Sessions\n${history}\n`
-      }
-    }
-
-    return prompt
+export function createCompactionContextInjector(_backgroundManager?: unknown) {
+  return (_sessionID?: string): string => {
+    // Simplified for video agent - no background tasks to track
+    return COMPACTION_CONTEXT_PROMPT
   }
 }

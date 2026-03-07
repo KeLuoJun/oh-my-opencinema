@@ -1,6 +1,7 @@
+// Simplified - task-toast-manager no longer needs concurrency for video agent
+
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { TrackedTask, TaskStatus, ModelFallbackInfo } from "./types"
-import type { ConcurrencyManager } from "../background-agent/concurrency"
 
 type OpencodeClient = PluginInput["client"]
 
@@ -13,232 +14,101 @@ type ClientWithTui = {
 export class TaskToastManager {
   private tasks: Map<string, TrackedTask> = new Map()
   private client: OpencodeClient
-  private concurrencyManager?: ConcurrencyManager
 
-  constructor(client: OpencodeClient, concurrencyManager?: ConcurrencyManager) {
+  constructor(client: OpencodeClient, _concurrencyManager?: unknown) {
     this.client = client
-    this.concurrencyManager = concurrencyManager
   }
 
-  setConcurrencyManager(manager: ConcurrencyManager): void {
-    this.concurrencyManager = manager
+  setConcurrencyManager(_manager: unknown): void {
+    // No-op for video agent
   }
 
   addTask(task: {
     id: string
     sessionID?: string
     description: string
-    agent: string
-    isBackground: boolean
-    status?: TaskStatus
-    category?: string
-    skills?: string[]
-    modelInfo?: ModelFallbackInfo
+    status: TaskStatus
+    agent?: string
+    isBackground?: boolean
   }): void {
-    const trackedTask: TrackedTask = {
+    this.tasks.set(task.id, {
       id: task.id,
       sessionID: task.sessionID,
       description: task.description,
-      agent: task.agent,
-      status: task.status ?? "running",
+      status: task.status,
+      agent: task.agent || "",
       startedAt: new Date(),
-      isBackground: task.isBackground,
-      category: task.category,
-      skills: task.skills,
-      modelInfo: task.modelInfo,
-    }
-
-    this.tasks.set(task.id, trackedTask)
-    this.showTaskListToast(trackedTask)
+      isBackground: false,
+    })
   }
 
-  /**
-   * Update task status
-   */
-  updateTask(id: string, status: TaskStatus): void {
-    const task = this.tasks.get(id)
+  updateTaskStatus(taskId: string, status: TaskStatus): void {
+    const task = this.tasks.get(taskId)
     if (task) {
       task.status = status
     }
   }
 
-  /**
-   * Update model info for a task by session ID
-   */
-  updateTaskModelBySession(sessionID: string, modelInfo: ModelFallbackInfo): void {
-    if (!sessionID) return
-    const task = Array.from(this.tasks.values()).find((t) => t.sessionID === sessionID)
-    if (!task) return
-    if (task.modelInfo?.model === modelInfo.model && task.modelInfo?.type === modelInfo.type) return
-    task.modelInfo = modelInfo
-    this.showTaskListToast(task)
+  removeTask(taskId: string): void {
+    this.tasks.delete(taskId)
   }
 
-  /**
-   * Remove completed/error task
-   */
-  removeTask(id: string): void {
-    this.tasks.delete(id)
-  }
-
-  /**
-   * Get all running tasks (newest first)
-   */
-  getRunningTasks(): TrackedTask[] {
-    const running = Array.from(this.tasks.values())
-      .filter((t) => t.status === "running")
-      .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime())
-    return running
-  }
-
-  /**
-   * Get all queued tasks
-   */
-  getQueuedTasks(): TrackedTask[] {
+  getTasks(): TrackedTask[] {
     return Array.from(this.tasks.values())
-      .filter((t) => t.status === "queued")
-      .sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime())
   }
 
-  /**
-   * Format duration since task started
-   */
-  private formatDuration(startedAt: Date): string {
-    const seconds = Math.floor((Date.now() - startedAt.getTime()) / 1000)
-    if (seconds < 60) return `${seconds}s`
-    const minutes = Math.floor(seconds / 60)
-    if (minutes < 60) return `${minutes}m ${seconds % 60}s`
-    const hours = Math.floor(minutes / 60)
-    return `${hours}h ${minutes % 60}m`
+  getTask(taskId: string): TrackedTask | undefined {
+    return this.tasks.get(taskId)
   }
 
-  private getConcurrencyInfo(): string {
-    if (!this.concurrencyManager) return ""
-    const running = this.getRunningTasks()
-    const queued = this.getQueuedTasks()
-    const total = running.length + queued.length
-    const limit = this.concurrencyManager.getConcurrencyLimit("default")
-    if (limit === Infinity) return ""
-    return ` [${total}/${limit}]`
+  getModelFallbackInfo(): ModelFallbackInfo | undefined {
+    // Simplified for video agent
+    return undefined
   }
 
-  private buildTaskListMessage(newTask: TrackedTask): string {
-    const running = this.getRunningTasks()
-    const queued = this.getQueuedTasks()
-    const concurrencyInfo = this.getConcurrencyInfo()
+  updateTaskModelBySession(_sessionID: string, _model: string): void {
+    // Simplified for video agent
+  }
 
-    const lines: string[] = []
+  formatActiveTasks(): string {
+    const active = this.getTasks().filter(t => t.status === "running")
+    if (active.length === 0) return ""
 
-    const isFallback = newTask.modelInfo && (
-      newTask.modelInfo.type === "inherited" ||
-      newTask.modelInfo.type === "system-default" ||
-      newTask.modelInfo.type === "runtime-fallback"
-    )
-    if (isFallback) {
-      const suffixMap: Record<"inherited" | "system-default" | "runtime-fallback", string> = {
-        inherited: " (inherited from parent)",
-        "system-default": " (system default fallback)",
-        "runtime-fallback": " (runtime fallback)",
-      }
-      const suffix = suffixMap[newTask.modelInfo!.type as "inherited" | "system-default" | "runtime-fallback"]
-      lines.push(`[FALLBACK] Model: ${newTask.modelInfo!.model}${suffix}`)
-      lines.push("")
+    const lines = active.map(t => `- ${t.description}`)
+    return `Active tasks (${active.length}):\n${lines.join("\n")}`
+  }
+
+  showTaskToast(taskId: string, message: string): void {
+    const task = this.getTask(taskId)
+    if (!task) return
+
+    const client = this.client as ClientWithTui
+    if (client.tui) {
+      client.tui.showToast({
+        body: {
+          title: task.description,
+          message,
+          variant: "info",
+          duration: 3000,
+        },
+      }).catch(() => {})
     }
-
-    if (running.length > 0) {
-      lines.push(`Running (${running.length}):${concurrencyInfo}`)
-      for (const task of running) {
-        const duration = this.formatDuration(task.startedAt)
-        const bgIcon = task.isBackground ? "[BG]" : "[RUN]"
-        const isNew = task.id === newTask.id ? " ← NEW" : ""
-        const categoryInfo = task.category ? `/${task.category}` : ""
-        const skillsInfo = task.skills?.length ? ` [${task.skills.join(", ")}]` : ""
-        lines.push(`${bgIcon} ${task.description} (${task.agent}${categoryInfo})${skillsInfo} - ${duration}${isNew}`)
-      }
-    }
-
-    if (queued.length > 0) {
-      if (lines.length > 0) lines.push("")
-      lines.push(`Queued (${queued.length}):`)
-      for (const task of queued) {
-        const bgIcon = task.isBackground ? "[Q]" : "[W]"
-        const categoryInfo = task.category ? `/${task.category}` : ""
-        const skillsInfo = task.skills?.length ? ` [${task.skills.join(", ")}]` : ""
-        const isNew = task.id === newTask.id ? " ← NEW" : ""
-        lines.push(`${bgIcon} ${task.description} (${task.agent}${categoryInfo})${skillsInfo} - Queued${isNew}`)
-      }
-    }
-
-    return lines.join("\n")
   }
 
-  /**
-   * Show consolidated toast with all running/queued tasks
-   */
-  private showTaskListToast(newTask: TrackedTask): void {
-    const tuiClient = this.client as ClientWithTui
-    if (!tuiClient.tui?.showToast) return
-
-    const message = this.buildTaskListMessage(newTask)
-    const running = this.getRunningTasks()
-    const queued = this.getQueuedTasks()
-
-    const title = newTask.isBackground
-      ? `New Background Task`
-      : `New Task Executed`
-
-    tuiClient.tui.showToast({
-      body: {
-        title,
-        message: message || `${newTask.description} (${newTask.agent})`,
-        variant: "info",
-        duration: running.length + queued.length > 2 ? 5000 : 3000,
-      },
-    }).catch(() => {})
-  }
-
-  /**
-   * Show task completion toast
-   */
-  showCompletionToast(task: { id: string; description: string; duration: string }): void {
-    const tuiClient = this.client as ClientWithTui
-    if (!tuiClient.tui?.showToast) return
-
-    this.removeTask(task.id)
-
-    const remaining = this.getRunningTasks()
-    const queued = this.getQueuedTasks()
-
-    let message = `"${task.description}" finished in ${task.duration}`
-    if (remaining.length > 0 || queued.length > 0) {
-      message += `\n\nStill running: ${remaining.length} | Queued: ${queued.length}`
-    }
-
-    tuiClient.tui.showToast({
-      body: {
-        title: "Task Completed",
-        message,
-        variant: "success",
-        duration: 5000,
-      },
-    }).catch(() => {})
+  clear(): void {
+    this.tasks.clear()
   }
 }
 
 let instance: TaskToastManager | null = null
 
+export function initTaskToastManager(client: OpencodeClient): TaskToastManager {
+  if (!instance) {
+    instance = new TaskToastManager(client)
+  }
+  return instance
+}
+
 export function getTaskToastManager(): TaskToastManager | null {
   return instance
-}
-
-export function initTaskToastManager(
-  client: OpencodeClient,
-  concurrencyManager?: ConcurrencyManager
-): TaskToastManager {
-  instance = new TaskToastManager(client, concurrencyManager)
-  return instance
-}
-
-export function _resetTaskToastManagerForTesting(): void {
-  instance = null
 }

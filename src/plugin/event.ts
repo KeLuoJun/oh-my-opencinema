@@ -137,10 +137,7 @@ export function createEventHandler(args: {
   const dispatchToHooks = async (input: EventInput): Promise<void> => {
     await Promise.resolve(hooks.autoUpdateChecker?.event?.(input));
     await Promise.resolve(hooks.claudeCodeHooks?.event?.(input));
-    await Promise.resolve(hooks.backgroundNotificationHook?.event?.(input));
     await Promise.resolve(hooks.sessionNotification?.(input));
-    await Promise.resolve(hooks.todoContinuationEnforcer?.handler?.(input));
-    await Promise.resolve(hooks.unstableAgentBabysitter?.event?.(input));
     await Promise.resolve(hooks.contextWindowMonitor?.event?.(input));
     await Promise.resolve(hooks.directoryAgentsInjector?.event?.(input));
     await Promise.resolve(hooks.directoryReadmeInjector?.event?.(input));
@@ -151,9 +148,6 @@ export function createEventHandler(args: {
     await Promise.resolve(hooks.agentUsageReminder?.event?.(input));
     await Promise.resolve(hooks.categorySkillReminder?.event?.(input));
     await Promise.resolve(hooks.interactiveBashSession?.event?.(input as EventInput));
-    await Promise.resolve(hooks.ralphLoop?.event?.(input));
-    await Promise.resolve(hooks.stopContinuationGuard?.event?.(input));
-    await Promise.resolve(hooks.compactionTodoPreserver?.event?.(input));
     await Promise.resolve(hooks.writeExistingFileGuard?.event?.(input));
   };
 
@@ -218,7 +212,10 @@ export function createEventHandler(args: {
 
       firstMessageVariantGate.markSessionCreated(sessionInfo);
 
-      await managers.tmuxSessionManager.onSessionCreated(
+      // tmuxSessionManager no longer needed for video agent
+      const tmuxManager = managers.tmuxSessionManager as { onSessionCreated?: (event: unknown) => Promise<void> } | undefined
+      if (tmuxManager?.onSessionCreated) {
+        await tmuxManager.onSessionCreated(
         event as {
           type: string;
           properties?: {
@@ -226,6 +223,7 @@ export function createEventHandler(args: {
           };
         },
       );
+      }
     }
 
     if (event.type === "session.deleted") {
@@ -248,9 +246,13 @@ export function createEventHandler(args: {
         deleteSessionTools(sessionInfo.id);
         await managers.skillMcpManager.disconnectSession(sessionInfo.id);
         await lspManager.cleanupTempDirectoryClients();
-        await managers.tmuxSessionManager.onSessionDeleted({
-          sessionID: sessionInfo.id,
-        });
+        // tmuxSessionManager no longer needed for video agent
+        const tmuxManagerDel = managers.tmuxSessionManager as { onSessionDeleted?: (event: { sessionID: string }) => Promise<void> } | undefined
+        if (tmuxManagerDel?.onSessionDeleted) {
+          await tmuxManagerDel.onSessionDeleted({
+            sessionID: sessionInfo.id,
+          });
+        }
       }
     }
 
@@ -310,7 +312,7 @@ export function createEventHandler(args: {
                 if (
                   setFallback &&
                   shouldAutoRetrySession(sessionID) &&
-                  !hooks.stopContinuationGuard?.isStopped(sessionID)
+                  true
                 ) {
                   lastHandledModelErrorMessageID.set(sessionID, assistantMessageID);
 

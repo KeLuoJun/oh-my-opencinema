@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun run:*)",
+      "Bash(npm run:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(tsc:*)",
+      "Bash(bun test:*)"
+    ]
+  }
+}
