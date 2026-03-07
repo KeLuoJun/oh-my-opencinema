@@ -8,7 +8,9 @@
       "Bash(ls:*)",
       "Bash(npm install:*)",
       "Bash(tsc:*)",
-      "Bash(bun test:*)"
+      "Bash(bun test:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm whoami:*)"
     ]
   }
 }

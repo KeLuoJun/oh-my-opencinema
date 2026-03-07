@@ -72,6 +72,11 @@ export const AgentOverridesSchema = z.object({
   explore: AgentOverrideConfigSchema.optional(),
   "multimodal-looker": AgentOverrideConfigSchema.optional(),
   atlas: AgentOverrideConfigSchema.optional(),
+  // Video production agents
+  cinema: AgentOverrideConfigSchema.optional(),
+  storyboarder: AgentOverrideConfigSchema.optional(),
+  prompter: AgentOverrideConfigSchema.optional(),
+  "script-writer": AgentOverrideConfigSchema.optional(),
 })
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>

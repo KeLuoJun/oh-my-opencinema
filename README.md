@@ -2,6 +2,10 @@
 
 An OpenCode plugin for AI-powered video storyboard generation. Transform your video ideas into detailed shot-by-shot storyboards with automatic sub-agent orchestration.
 
+## Prerequisites
+
+This plugin requires [OpenCode](https://github.com/anomalyco/opencode). Please install OpenCode first before using this plugin.
+
 ## Overview
 
 Oh My OpenCinema leverages AI to help you create professional video storyboards. Simply describe your video idea, and the plugin automatically orchestrates a team of specialized AI agents:
@@ -21,66 +25,82 @@ Oh My OpenCinema leverages AI to help you create professional video storyboards.
 
 ## Installation
 
-```bash
-npm install oh-my-opencode
-```
-
-Or use bun:
+Install the plugin globally or locally in your project:
 
 ```bash
-bun add oh-my-opencode
+npm install oh-my-opencinema
 ```
 
-## Usage
+Or using bun:
 
-1. Install the plugin in OpenCode
-2. Start a new session and use the `cinema` agent
-3. Describe your video idea (e.g., "A romantic sunset scene on a beach")
-4. The Cinema agent will automatically orchestrate the storyboard generation
-
-Example prompt:
-```
-Create a storyboard for a 30-second romantic short film about two characters meeting at a coffee shop.
+```bash
+bun add oh-my-opencinema
 ```
 
 ## Configuration
 
-Create an `opencode.jsonc` file in your project:
+After installation, configure the plugin in your project's `opencode.jsonc` file:
+
+### Agent Configuration
+
+You can configure each agent with a specific LLM model. If not configured, agents will inherit the model from the parent agent (OpenCode's main agent):
 
 ```jsonc
 {
-  // Enable the cinema agent
+  // Configure models for each agent (optional - defaults to parent's model)
   "agents": {
     "cinema": {
-      "enabled": true
-    }
-  },
-  // Optional: Configure categories for task delegation
-  "categories": {
-    "storyboard": {
-      "enabled": true
+      "model": "anthropic/claude-sonnet-4-6",
+      "variant": "latest"
     },
-    "prompt-engineering": {
-      "enabled": true
+    "storyboarder": {
+      "model": "openai/gpt-4o"
     },
-    "narrative": {
-      "enabled": true
+    "prompter": {
+      "model": "anthropic/claude-opus-4-6"
+    },
+    "script-writer": {
+      "model": "openai/gpt-4o"
     }
   }
 }
 ```
 
-## Architecture
+### Category Configuration
 
+You can also configure categories for task delegation:
+
+```jsonc
+{
+  "categories": {
+    "storyboard": {
+      "model": "anthropic/claude-sonnet-4-6"
+    },
+    "prompt-engineering": {
+      "model": "openai/gpt-4o"
+    },
+    "narrative": {
+      "model": "anthropic/claude-opus-4-6"
+    }
+  }
+}
 ```
-src/
-├── agents/              # AI agents (cinema, storyboarder, prompter, script-writer)
-├── hooks/              # OpenCode lifecycle hooks
-├── tools/              # Tools including delegate-task for sub-agent orchestration
-├── features/           # Standalone feature modules
-├── config/             # Zod schema system
-├── mcp/                # Built-in MCPs (websearch, context7, grep_app)
-└── plugin/             # OpenCode hook handlers
+
+**Model Configuration Precedence:**
+1. Explicit agent/category model configuration
+2. Agent override model
+3. Category resolved model
+4. Inherited from parent agent (default when not configured)
+
+## Usage
+
+1. Start a new session in OpenCode
+2. Use the `cinema` agent by describing your video idea
+3. The Cinema agent will automatically orchestrate the storyboard generation
+
+Example:
+```
+Create a storyboard for a 30-second romantic short film about two characters meeting at a coffee shop.
 ```
 
 ## Development
@@ -103,6 +123,7 @@ bun run typecheck
 
 SUL-1.0
 
-## Author
+## Links
 
-YeonGyu-Kim
+- [OpenCode Official Repository](https://github.com/anomalyco/opencode)
+- [Oh My OpenCinema GitHub](https://github.com/code-yeongyu/oh-my-opencinema)

@@ -88,19 +88,26 @@ Available categories: ${allCategoryNames}`,
   const overrideModel = sisyphusJuniorModel
   const explicitCategoryModel = userCategories?.[args.category!]?.model
 
+  // inheritedModel is already a string (provider/model format) from tools.ts
+  // Use it as fallback if no explicit model is configured
   if (!requirement) {
-    // Precedence: explicit category model > sisyphus-junior default > category resolved model
-    // This keeps `sisyphus-junior.model` useful as a global default while allowing
-    // per-category overrides via `categories[category].model`.
-    actualModel = explicitCategoryModel ?? overrideModel ?? resolved.model
+    // Precedence: explicit category model > agent override > category resolved model > inherited from parent
+    // This allows each sub-agent to use its own configured model, or inherit from parent if not configured
+    actualModel = explicitCategoryModel ?? overrideModel ?? resolved.model ?? inheritedModel
     if (actualModel) {
-      modelInfo = explicitCategoryModel || overrideModel
-        ? { model: actualModel, type: "user-defined", source: "override" }
-        : { model: actualModel, type: "system-default", source: "system-default" }
+      if (explicitCategoryModel || overrideModel) {
+        modelInfo = { model: actualModel, type: "user-defined", source: "override" }
+      } else if (inheritedModel && actualModel === inheritedModel) {
+        modelInfo = { model: actualModel, type: "inherited", source: "parent-agent" }
+      } else {
+        modelInfo = { model: actualModel, type: "system-default", source: "system-default" }
+      }
     }
   } else {
+    // Include inheritedModel as fallback if no explicit model is configured
+    const userModel = explicitCategoryModel ?? overrideModel ?? inheritedModel
     const resolution = resolveModelForDelegateTask({
-      userModel: explicitCategoryModel ?? overrideModel,
+      userModel,
       categoryDefaultModel: resolved.model,
       fallbackChain: requirement.fallbackChain,
       availableModels,
@@ -127,16 +134,20 @@ Available categories: ${allCategoryNames}`,
       const type: "user-defined" | "inherited" | "category-default" | "system-default" =
         (explicitCategoryModel || overrideModel)
           ? "user-defined"
-          : (systemDefaultModel && actualModel === systemDefaultModel)
-              ? "system-default"
-              : "category-default"
+          : (inheritedModel && actualModel === inheritedModel)
+              ? "inherited"
+              : (systemDefaultModel && actualModel === systemDefaultModel)
+                  ? "system-default"
+                  : "category-default"
 
-      const source: "override" | "category-default" | "system-default" =
+      const source: "override" | "category-default" | "system-default" | "parent-agent" =
         type === "user-defined"
           ? "override"
-          : type === "system-default"
-              ? "system-default"
-              : "category-default"
+          : type === "inherited"
+              ? "parent-agent"
+              : type === "system-default"
+                  ? "system-default"
+                  : "category-default"
 
       modelInfo = { model: actualModel, type, source }
 

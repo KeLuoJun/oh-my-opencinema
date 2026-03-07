@@ -1,0 +1,12 @@
+.npmignore
+.claude/
+CLAUDE.md
+src/
+scripts/
+docs/
+*.test.ts
+*.static.test.ts
+tsconfig.json
+bun.lockb
+assets/
+!.npmignore

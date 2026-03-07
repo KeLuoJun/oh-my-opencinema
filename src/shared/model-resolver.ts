@@ -13,6 +13,7 @@ export type ModelSource =
 	| "category-default"
 	| "provider-fallback"
 	| "system-default"
+	| "parent-agent"
 
 export type ModelResolutionResult = {
 	model: string

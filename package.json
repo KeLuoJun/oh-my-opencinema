@@ -1,17 +1,18 @@
 {
-  "name": "oh-my-opencode",
-  "version": "3.10.1",
-  "description": "The Best AI Agent Harness - Batteries-Included OpenCode Plugin with Multi-Model Orchestration, Parallel Background Agents, and Crafted LSP/AST Tools",
+  "name": "oh-my-opencinema",
+  "version": "1.0.0",
+  "description": "An OpenCode plugin for AI-powered video storyboard generation with automatic sub-agent orchestration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "oh-my-opencode": "bin/oh-my-opencode.js"
+    "oh-my-opencinema": "bin/oh-my-opencode.js"
   },
   "files": [
     "dist",
     "bin",
-    "postinstall.mjs"
+    "postinstall.mjs",
+    "assets/"
   ],
   "exports": {
     ".": {
@@ -34,22 +35,22 @@
   "keywords": [
     "opencode",
     "plugin",
-    "oracle",
-    "librarian",
-    "agents",
-    "ai",
-    "llm"
+    "cinema",
+    "video",
+    "storyboard",
+    "ai-video",
+    "agents"
   ],
   "author": "YeonGyu-Kim",
   "license": "SUL-1.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/code-yeongyu/oh-my-opencode.git"
+    "url": "git+https://github.com/code-yeongyu/oh-my-opencinema.git"
   },
   "bugs": {
-    "url": "https://github.com/code-yeongyu/oh-my-opencode/issues"
+    "url": "https://github.com/code-yeongyu/oh-my-opencinema/issues"
   },
-  "homepage": "https://github.com/code-yeongyu/oh-my-opencode#readme",
+  "homepage": "https://github.com/code-yeongyu/oh-my-opencinema#readme",
   "dependencies": {
     "@ast-grep/cli": "^0.40.0",
     "@ast-grep/napi": "^0.40.0",
