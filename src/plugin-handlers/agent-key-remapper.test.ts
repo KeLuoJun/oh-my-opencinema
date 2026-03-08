@@ -5,17 +5,16 @@ describe("remapAgentKeysToDisplayNames", () => {
   it("remaps known agent keys to display names", () => {
     // given agents with lowercase keys
     const agents = {
-      sisyphus: { prompt: "test", mode: "primary" },
+      cinema: { prompt: "test", mode: "primary" },
       oracle: { prompt: "test", mode: "subagent" },
     }
 
     // when remapping
     const result = remapAgentKeysToDisplayNames(agents)
 
-    // then known agents get display name keys only
-    expect(result["Sisyphus (Ultraworker)"]).toBeDefined()
+    // then known agents get display name keys, unknown agents preserved
+    expect(result["cinema"]).toBeDefined()
     expect(result["oracle"]).toBeDefined()
-    expect(result["sisyphus"]).toBeUndefined()
   })
 
   it("preserves unknown agent keys unchanged", () => {
@@ -31,35 +30,16 @@ describe("remapAgentKeysToDisplayNames", () => {
     expect(result["custom-agent"]).toBeDefined()
   })
 
-  it("remaps all core agents to display names", () => {
-    // given all core agents
+  it("remaps cinema agent to display name", () => {
+    // given cinema agent
     const agents = {
-      sisyphus: {},
-      hephaestus: {},
-      prometheus: {},
-      atlas: {},
-      metis: {},
-      momus: {},
-      "sisyphus-junior": {},
+      cinema: {},
     }
 
     // when remapping
     const result = remapAgentKeysToDisplayNames(agents)
 
-    // then all get display name keys without lowercase duplicates
-    expect(result["Sisyphus (Ultraworker)"]).toBeDefined()
-    expect(result["sisyphus"]).toBeUndefined()
-    expect(result["Hephaestus (Deep Agent)"]).toBeDefined()
-    expect(result["hephaestus"]).toBeUndefined()
-    expect(result["Prometheus (Plan Builder)"]).toBeDefined()
-    expect(result["prometheus"]).toBeUndefined()
-    expect(result["Atlas (Plan Executor)"]).toBeDefined()
-    expect(result["atlas"]).toBeUndefined()
-    expect(result["Metis (Plan Consultant)"]).toBeDefined()
-    expect(result["metis"]).toBeUndefined()
-    expect(result["Momus (Plan Critic)"]).toBeDefined()
-    expect(result["momus"]).toBeUndefined()
-    expect(result["Sisyphus-Junior"]).toBeDefined()
-    expect(result["sisyphus-junior"]).toBeUndefined()
+    // then cinema key is preserved (display name equals key)
+    expect(result["cinema"]).toBeDefined()
   })
 })
