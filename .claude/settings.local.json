@@ -10,7 +10,15 @@
       "Bash(tsc:*)",
       "Bash(bun test:*)",
       "Bash(npm publish:*)",
-      "Bash(npm whoami:*)"
+      "Bash(npm whoami:*)",
+      "Bash(npm config:*)",
+      "Bash(npm view:*)",
+      "Bash(npx tsc:*)",
+      "Bash(gh run:*)",
+      "Bash(gh auth:*)",
+      "Bash(where gh:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)"
     ]
   }
 }

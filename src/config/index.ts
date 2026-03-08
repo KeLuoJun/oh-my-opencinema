@@ -1,23 +1,26 @@
 export {
   OhMyOpenCodeConfigSchema,
-} from "./schema"
+} from "./schema/index"
 
 export type {
   OhMyOpenCodeConfig,
   AgentOverrideConfig,
   AgentOverrides,
   McpName,
+  AnyMcpName,
   AgentName,
   HookName,
   BuiltinCommandName,
-  SisyphusAgentConfig,
   ExperimentalConfig,
-  DynamicContextPruningConfig,
-  RalphLoopConfig,
   TmuxConfig,
   TmuxLayout,
-  SisyphusConfig,
-  SisyphusTasksConfig,
   RuntimeFallbackConfig,
   FallbackModels,
-} from "./schema"
+  BrowserAutomationProvider,
+  BrowserAutomationConfig,
+  GitMasterConfig,
+  CommentCheckerConfig,
+  WebsearchConfig,
+  NotificationConfig,
+  DynamicContextPruningConfig,
+} from "./schema/index"
