@@ -1,5 +1,6 @@
 import type { AgentConfig } from "@opencode-ai/sdk"
 import { createCinemaAgent } from "./cinema"
+import { createScorerAgent } from "./scorer"
 import type { AgentOverrides } from "./types"
 
 export async function createBuiltinAgents(
@@ -17,6 +18,12 @@ export async function createBuiltinAgents(
     // Use default model or system model
     const model = systemDefaultModel ?? "claude-sonnet-4-20250514"
     result["cinema"] = createCinemaAgent(model)
+  }
+
+  // Create scorer agent if not disabled
+  if (!disabledAgentNames.has("scorer")) {
+    const model = systemDefaultModel ?? "claude-sonnet-4-20250514"
+    result["scorer"] = createScorerAgent(model)
   }
 
   return result

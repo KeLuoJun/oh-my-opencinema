@@ -99,15 +99,6 @@ seagulls calling 40 meters overhead, no music, no dialogue, immersive natural so
 - 与中文语义完全一致
 - 使用专业摄影语言
 - Audio 段落格式统一
-
-## 自评分（提交前必须）
-
-- 提示词精确性（四要素齐全）：__
-- Style Spine 色彩锚点覆盖：__
-- 音频描述原生嵌入质量：__
-- 平台适配合理性：__
-
-**综合分 ≥ 0.8 提交，< 0.8 自优化，< 0.5 重做（最多2次）**
 `
 
 export const PROMPTER_PROMPT_METADATA: AgentPromptMetadata = {

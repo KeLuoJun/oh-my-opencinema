@@ -65,15 +65,6 @@ export const STORYBOARDER_SYSTEM_PROMPT = `# Storyboarder - 分镜统筹
   ]
 }
 \`\`\`
-
-## 自评分（提交前必须）
-
-- 叙事弧线完整性：__
-- 连贯性桥接质量：__
-- 景别节奏合理性：__
-- Style Spine 符合度（视觉+音频）：__
-
-**综合分 ≥ 0.8 提交，< 0.8 自优化，< 0.5 重做（最多2次）**
 `
 
 export const STORYBOARDER_PROMPT_METADATA: AgentPromptMetadata = {

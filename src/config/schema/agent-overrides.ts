@@ -77,6 +77,12 @@ export const AgentOverridesSchema = z.object({
   storyboarder: AgentOverrideConfigSchema.optional(),
   prompter: AgentOverrideConfigSchema.optional(),
   "script-writer": AgentOverrideConfigSchema.optional(),
+  scorer: AgentOverrideConfigSchema.extend({
+    /** Score threshold - output with score >= threshold passes */
+    threshold: z.number().min(0).max(1).optional(),
+    /** Maximum retry attempts when score is below threshold */
+    max_retries: z.number().min(0).max(5).optional(),
+  }).optional(),
 })
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>

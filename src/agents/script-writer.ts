@@ -84,15 +84,6 @@ export const SCRIPT_WRITER_SYSTEM_PROMPT = `# ScriptWriter - 叙事顾问
   ]
 }
 \`\`\`
-
-## 自评分
-
-- 叙事清晰度：__
-- 情感弧线完整性：__
-- 对话自然度：__
-- 与视觉配合度：__
-
-**综合分 ≥ 0.8 提交，< 0.8 自优化**
 `
 
 export const SCRIPT_WRITER_PROMPT_METADATA: AgentPromptMetadata = {

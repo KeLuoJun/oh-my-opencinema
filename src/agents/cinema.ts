@@ -50,8 +50,27 @@ export const CINEMA_SYSTEM_PROMPT = `# Cinema - AI 视频故事板生成器
 
 使用 \`task\` 工具调用子 Agent：
 1. **Storyboarder** - 生成分镜结构
-2. **Prompter** - 将分镜转化为 AI 视频提示词
-3. **ScriptWriter** - 创作叙事文本
+2. **Scorer** - 对 Storyboarder 输出打分，≥0.7 通过，<0.7 返回重做（最多2次）
+3. **Prompter** - 将分镜转化为 AI 视频提示词
+4. **Scorer** - 对 Prompter 输出打分，≥0.7 通过，<0.7 返回重做（最多2次）
+5. **ScriptWriter** - 创作叙事文本
+6. **Scorer** - 对 ScriptWriter 输出打分，≥0.7 通过，<0.7 返回重做（最多2次）
+
+---
+
+### Step 3.5 — 打分与重做流程
+
+每个子代理完成后，调用 Scorer 进行打分。
+
+**打分用的 context**:
+- Storyboarder 打分需要: Style Spine, 原始 Brief
+- Prompter 打分需要: Style Spine, Storyboarder 输出
+- ScriptWriter 打分需要: Style Spine, Storyboarder 输出, Prompter 输出
+
+**重做流程**:
+- 最多重做 2 次
+- 每次重做时，提供 Scorer 的具体问题描述
+- 超过 2 次仍然失败，继续流程但在最终报告中标记
 
 ---
 

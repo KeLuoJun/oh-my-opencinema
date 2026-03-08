@@ -1,53 +1,117 @@
 # Oh My OpenCinema
 
-An OpenCode plugin for AI-powered video storyboard generation. Transform your video ideas into detailed shot-by-shot storyboards with automatic sub-agent orchestration.
+<p align="right">
+  <strong>English</strong> | <a href="./README.zh-cn.md">简体中文</a>
+</p>
 
-## Prerequisites
+**An OpenCode Plugin for AI-Powered Video Storyboard Generation**
 
-This plugin requires [OpenCode](https://github.com/anomalyco/opencode). Please install OpenCode first before using this plugin.
+Transform video ideas into detailed shot-by-shot storyboards with automatic sub-agent orchestration.
 
-## Overview
+---
 
-Oh My OpenCinema leverages AI to help you create professional video storyboards. Simply describe your video idea, and the plugin automatically orchestrates a team of specialized AI agents:
+## Quick Start
 
-- **Cinema Agent** - Main orchestrator that receives video ideas and manages the entire workflow
-- **Storyboarder Agent** - Designs shot structure and narrative arc
-- **Prompter Agent** - Generates AI video prompts with audio embedding suggestions
-- **Script Writer Agent** - Creates narrative text and dialogue
+```bash
+# Install OpenCode first, then add the plugin
+cd ~/.config/opencode
+bun add oh-my-opencode
+```
+
+Edit `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "plugin": ["oh-my-opencinema"]
+}
+```
+
+Then run `opencode` and start describing your video ideas to the Cinema agent.
+
+---
+
+## Agent Architecture
+
+### Three-Tier Design
+
+```
+User ↔ Cinema (Main Orchestrator)
+           ↓ task delegation
+    Storyboarder (Shot Planning)
+           ↓ task delegation
+    Prompter + ScriptWriter (Content Generation)
+```
+
+### Agent Team
+
+| Agent | Role | Description |
+|-------|------|-------------|
+| **cinema** | Director | Main orchestrator. Receives video ideas, generates Style Spine, orchestrates sub-agents, performs final QA |
+| **storyboarder** | Storyboard Lead | Designs shot structure, narrative arc, shot-by-shot breakdown, cross-shot continuity planning |
+| **prompter** | Prompt Engineer | Converts shots to AI video prompts with native audio embedding, bilingual (CN/EN) output |
+| **script-writer** | scene narratives, emotional Narrative Writer | Creates beats, dialogue/narration |
+| **scorer** | Quality Evaluator | Independent quality scoring for each sub-agent output. Scores 6 dimensions (≥0.7 to pass, ≤2 retries on failure) |
+
+### Workflow
+
+**Step 1 — Requirement Analysis**
+- Cinema analyzes user's video brief
+- If missing info (duration, platform, aspect ratio, style references, characters, audio needs), asks clarifying questions in one go
+
+**Step 2 — Style Spine Generation (Required First)**
+- Generate consistent visual style guidelines:
+  - `aesthetic`: One-sentence visual style definition
+  - `palette_anchors`: 3-5 specific color keywords
+  - `lighting_logic`: Main light source, direction, shadow treatment
+  - `camera_grammar`: Cinematography preferences
+  - `lens_character`: Focal length, depth of field style
+  - `motion_tempo`: Rhythm foundation
+  - `audio_world`: Overall audio atmosphere
+  - `audio_palette`: Sound themes throughout the video
+  - `scene_transitions`: Transition methods
+  - `forbidden_visual/audio`: Elements to avoid
+
+**Step 3 — Storyboard Generation**
+- Cinema delegates to sub-agents via `task` tool:
+  1. **Storyboarder** → generates shot structure (JSON artifact)
+  2. **Scorer** → scores output (≥0.7 to pass, <0.7 returns for retry, max 2 retries)
+  3. **Prompter** → converts to AI video prompts
+  4. **Scorer** → scores output (≥0.7 to pass, <0.7 returns for retry, max 2 retries)
+  5. **ScriptWriter** → creates narrative text
+  6. **Scorer** → scores output (≥0.7 to pass, <0.7 returns for retry, max 2 retries)
+
+**Step 4 — QA & Delivery**
+- Scorer evaluates each sub-agent independently
+- Cinema performs final QA:
+  - Four-elements per shot (frame + action + lighting + audio)
+  - Style Spine palette anchors in every prompt
+  - Audio palette in Audio paragraphs
+  - Bilingual consistency
+  - Complete emotional arc
+
+---
 
 ## Features
 
-- **Automatic Delegation** - The Cinema agent automatically delegates tasks to specialized sub-agents
-- **Style Spine Generation** - Generates consistent visual style guidelines for your video
-- **Multi-Shot Planning** - Breaks down your video into detailed shots with descriptions
-- **Prompt Engineering** - Creates optimized prompts for AI video generation tools
-- **Script Writing** - Generates narrative text, captions, and dialogue
+- **Automatic Delegation** — Cinema automatically delegates to specialized sub-agents
+- **Style Spine Generation** — Consistent visual style guidelines
+- **Multi-Shot Planning** — Detailed shot breakdown with descriptions
+- **Prompt Engineering** — Optimized prompts for AI video tools (Kling, Veo, Sora, Runway)
+- **Script Writing** — Narrative text, captions, and dialogue
+- **Bilingual Output** — Chinese and English prompts for each shot
+- **Native Audio Embedding** — Audio descriptions embedded in prompts
+- **Independent Quality Scoring** — Scorer agent evaluates each sub-agent output with 6 dimensions (completeness, style visual, style audio, consistency, emotional arc, coherence). Threshold ≥0.7, max 2 retries on failure
 
-## Installation
-
-Install the plugin globally or locally in your project:
-
-```bash
-npm install oh-my-opencinema
-```
-
-Or using bun:
-
-```bash
-bun add oh-my-opencinema
-```
+---
 
 ## Configuration
 
-After installation, configure the plugin in your project's `opencode.jsonc` file:
-
 ### Agent Configuration
 
-You can configure each agent with a specific LLM model. If not configured, agents will inherit the model from the parent agent (OpenCode's main agent):
+Configure each agent with a specific LLM model:
 
 ```jsonc
 {
-  // Configure models for each agent (optional - defaults to parent's model)
   "agents": {
     "cinema": {
       "model": "anthropic/claude-sonnet-4-6",
@@ -61,6 +125,11 @@ You can configure each agent with a specific LLM model. If not configured, agent
     },
     "script-writer": {
       "model": "openai/gpt-4o"
+    },
+    "scorer": {
+      "model": "anthropic/claude-sonnet-4-6",
+      "threshold": 0.7,
+      "max_retries": 2
     }
   }
 }
@@ -68,7 +137,7 @@ You can configure each agent with a specific LLM model. If not configured, agent
 
 ### Category Configuration
 
-You can also configure categories for task delegation:
+Configure task delegation categories:
 
 ```jsonc
 {
@@ -92,16 +161,38 @@ You can also configure categories for task delegation:
 3. Category resolved model
 4. Inherited from parent agent (default when not configured)
 
+### Disable Agents
+
+```jsonc
+{
+  "disabled_agents": ["script-writer"]
+}
+```
+
+---
+
 ## Usage
 
 1. Start a new session in OpenCode
-2. Use the `cinema` agent by describing your video idea
-3. The Cinema agent will automatically orchestrate the storyboard generation
+2. Describe your video idea to Cinema agent
+3. Cinema will automatically orchestrate the storyboard generation
 
-Example:
+**Example:**
 ```
 Create a storyboard for a 30-second romantic short film about two characters meeting at a coffee shop.
 ```
+
+### Output Format
+
+Cinema agent outputs a Markdown document:
+1. **Production Summary** — Project overview
+2. **Style Spine** — Visual & audio style guidelines
+3. **Character Bible** — Character descriptions
+4. **Shot Prompts** — Bilingual prompts (CN/EN) with Audio for each shot
+5. **Platform Recommendations** — Kling/Veo/Sora/Runway optimization
+6. **QA Report** — Quality assurance checklist
+
+---
 
 ## Development
 
@@ -119,9 +210,13 @@ bun test
 bun run typecheck
 ```
 
+---
+
 ## License
 
 SUL-1.0
+
+---
 
 ## Links
 
