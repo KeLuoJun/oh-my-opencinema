@@ -15,7 +15,7 @@ Transform video ideas into detailed shot-by-shot storyboards with automatic sub-
 ```bash
 # Install OpenCode first, then add the plugin
 cd ~/.config/opencode
-bun add oh-my-opencode
+bun add oh-my-opencinema
 ```
 
 Edit `~/.config/opencode/opencode.json`:
