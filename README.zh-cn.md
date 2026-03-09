@@ -161,7 +161,7 @@ bun add oh-my-opencode
 3. 类别解析模型
 4. 从父代理继承（未配置时的默认值）
 
-### 禁用代理
+### 禁用Agent
 
 ```jsonc
 {
