@@ -15,7 +15,7 @@
 ```bash
 # 先安装 OpenCode，再添加插件
 cd ~/.config/opencode
-bun add oh-my-opencode
+bun add oh-my-opencinema
 ```
 
 编辑 `~/.config/opencode/opencode.json`：

@@ -1,6 +1,6 @@
 {
   "name": "oh-my-opencinema",
-  "version": "1.0.0",
+  "version": "3.11.2",
   "description": "An OpenCode plugin for AI-powered video storyboard generation with automatic sub-agent orchestration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
